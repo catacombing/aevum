@@ -11,6 +11,13 @@
 
 <br />
 
+## Screenshots
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/830e06af-1420-41db-93fe-627f42c7af7c" width="30%"/>
+  <img src="https://github.com/user-attachments/assets/3712883f-c1d6-4050-8927-85b28a5e793d" width="30%"/>
+</p>
+
 ## Building from Source
 
 Aevum is compiled with cargo, which creates a binary at `target/release/aevum`:
