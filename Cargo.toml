@@ -1,7 +1,7 @@
 [package]
-name = "alarm"
+name = "aevum"
 version = "1.1.1"
-description = "Rezz alarm clock client interface"
+description = "Alarm clock"
 authors = ["Christian Duerr <contact@christianduerr.com>"]
 repository = "https://github.com/catacombing/alarm"
 license = "GPL-3.0"
@@ -9,14 +9,14 @@ rust-version.workspace = true
 edition.workspace = true
 
 [workspace]
-members = ["rezz", "cli", "aevum"]
+members = ["rezz", "cli", "alarm"]
 
 [workspace.package]
 edition = "2024"
 rust-version = "1.85.0"
 
 [workspace.dependencies]
-alarm = { version = "1.1.0", path = "./" }
+alarm = { version = "1.1.0", path = "./alarm" }
 clap = "4.4.4"
 futures-util = "0.3.31"
 libc = "0.2.148"
@@ -35,11 +35,23 @@ uuid = "1.4.1"
 zbus = { version = "5.5.0", default-features = false }
 
 [dependencies]
-libc.workspace = true
+alarm.workspace = true
+calloop = { version = "0.14.2", features = ["executor"] }
+calloop-wayland-source = "0.4.0"
+configory = { version = "0.5.2", features = ["docgen", "log"] }
+glutin = { version = "0.32.3", default-features = false, features = ["egl", "wayland"] }
+raw-window-handle = "0.6.2"
 rezz.workspace = true
-rodio.workspace = true
+serde.workspace = true
+skia-safe = { version = "0.87.0", features = ["all-linux", "textlayout"] }
+smithay-client-toolkit = { version = "0.19.2", default-features = false, features = ["xkbcommon"] }
 thiserror.workspace = true
 time = { workspace = true, features = ["macros", "formatting", "local-offset"] }
-tokio-stream.workspace = true
-tokio = { workspace = true, features = ["macros", "signal"] }
-zbus = { workspace = true, features = ["tokio"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tracing-subscriber.workspace = true
+tracing.workspace = true
+uuid = { workspace = true, features = ["v4"] }
+wayland-backend = { version = "0.3.10", features = ["client_system"] }
+
+[build-dependencies]
+gl_generator = "0.14.0"

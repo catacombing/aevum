@@ -11,7 +11,7 @@ use crate::error::Error;
 ///
 /// Created as `service-login.oga` by the Pidgin developers under GPLv2:
 /// https://cgit.freedesktop.org/sound-theme-freedesktop.
-const ALARM_AUDIO: &[u8] = include_bytes!("../alarm.flac");
+const ALARM_AUDIO: &[u8] = include_bytes!("../../alarm.flac");
 
 /// Length of the alarm audio file.
 ///
