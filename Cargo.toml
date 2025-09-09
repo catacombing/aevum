@@ -9,7 +9,7 @@ rust-version.workspace = true
 edition.workspace = true
 
 [workspace]
-members = ["rezz", "cli", "gtk", "aevum"]
+members = ["rezz", "cli", "aevum"]
 
 [workspace.package]
 edition = "2024"
@@ -19,7 +19,6 @@ rust-version = "1.85.0"
 alarm = { version = "1.1.0", path = "./" }
 clap = "4.4.4"
 futures-util = "0.3.31"
-gtk4 = "0.10.0"
 libc = "0.2.148"
 nix = "0.30.1"
 rezz = { version = "1.1.0", path = "./rezz" }
