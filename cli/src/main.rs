@@ -3,7 +3,7 @@
 use std::num::ParseIntError;
 use std::process::ExitCode;
 use std::str::FromStr;
-use std::time::Duration as StdDuration;
+use std::time::{Duration as StdDuration, Instant};
 
 use alarm::audio::AlarmSound;
 use alarm::{Alarms, Event, Subscriber};
@@ -13,6 +13,9 @@ use time::error::ComponentRange;
 use time::format_description::well_known::Rfc2822;
 use time::{Duration, Month, OffsetDateTime, Time, UtcOffset};
 use uuid::Uuid;
+
+/// Infinite sleep timeout.
+const INFINITY: StdDuration = StdDuration::from_secs(60 * 60 * 24 * 365 * 999);
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
@@ -132,18 +135,62 @@ pub async fn main() -> ExitCode {
 
             println!("Successfully started alarm daemon");
 
+            let mut ringing_alarm: Option<RingingAlarm> = None;
             loop {
-                // Play alarm sounds.
-                if let Some(Event::Ring(alarm)) = subscriber.next().await {
-                    let sound = match AlarmSound::play() {
-                        Ok(sound) => sound,
-                        Err(err) => {
-                            eprintln!("Could not play alarm sound: {err}");
-                            continue;
+                // Convert optional timeout into infinite future on `None`.
+                let ringing_timeout = match &ringing_alarm {
+                    Some(ringing) => tokio::time::sleep_until(ringing.timeout.into()),
+                    None => tokio::time::sleep(INFINITY),
+                };
+
+                tokio::select! {
+                    Some(event) = subscriber.next() => match event {
+                        // Play sound once an alarm becomes active.
+                        Event::Ring(alarm) => {
+                            // Wait for 3 seconds to allow a UI frontend to pick up the alarm.
+                            tokio::time::sleep(StdDuration::from_secs(3)).await;
+
+                            // Get full list of alarms, including alarms currently ringing.
+                            let all_alarms = match Alarms.load().await {
+                                Ok(all_alarms) => all_alarms,
+                                Err(_) => continue,
+                            };
+
+                            // Ignore alarm if it has been picked up while waiting.
+                            if !all_alarms.iter().any(|a| a.id == alarm.id) {
+                                continue;
+                            }
+
+                            // Start ringing if the alarm hasn't been picked up by a UI.
+                            let sound = match AlarmSound::play() {
+                                Ok(sound) => sound,
+                                Err(err) => {
+                                    eprintln!("Could not play alarm sound: {err}");
+                                    continue;
+                                },
+                            };
+
+                            // Schedule alarm for cancellation.
+                            let timeout =
+                                Instant::now() + StdDuration::from_secs(alarm.ring_seconds as u64);
+                            ringing_alarm = Some(RingingAlarm { alarm, timeout, sound });
                         },
-                    };
-                    tokio::time::sleep(StdDuration::from_secs(alarm.ring_seconds as u64)).await;
-                    sound.stop();
+                        // Cancel alarm if it was removed by a third-party client.
+                        Event::AlarmsChanged(alarms) => {
+                            if let Some(ringing) = &ringing_alarm
+                                && !alarms.iter().any(|alarm| alarm.id == ringing.alarm.id)
+                            {
+                                ringing_alarm = None;
+                            }
+                        },
+                    },
+                    // NOTE: This usually isn't hit, since the removal of the Alarm through DBus
+                    // after it stops ringing will cancel the alarm automatically.
+                    _ = ringing_timeout => {
+                        if let Some(ringing) = ringing_alarm.take() {
+                            ringing.sound.stop();
+                        }
+                    },
                 }
             }
         },
@@ -209,6 +256,13 @@ impl FromStr for ClapDateTime {
 
         Ok(Self(now))
     }
+}
+
+/// Actively ringing alarm.
+struct RingingAlarm {
+    alarm: Alarm,
+    timeout: Instant,
+    sound: AlarmSound,
 }
 
 #[derive(thiserror::Error, Clone, Debug)]
