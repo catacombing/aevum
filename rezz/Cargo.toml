@@ -1,6 +1,6 @@
 [package]
 name = "rezz"
-version = "1.1.1"
+version = "2.0.0"
 description = "DBus RTC alarm clock daemon"
 repository = "https://github.com/catacombing/alarm"
 license = "GPL-3.0"
