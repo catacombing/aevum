@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::time::{Duration, SystemTime};
 
 use rezz::Alarm;
@@ -77,7 +78,7 @@ impl Subscriber<'static> {
                     alarms.sort_unstable();
                     self.alarms = alarms;
 
-                    return Some(Event::AlarmsChanged(&self.alarms));
+                    return Some(Event::AlarmsChanged(Cow::Borrowed(&self.alarms)));
                 }
             },
             // Ring the alarm.
@@ -137,6 +138,6 @@ impl Subscriber<'static> {
 
 /// Alarm subscription events.
 pub enum Event<'a> {
-    AlarmsChanged(&'a [Alarm]),
+    AlarmsChanged(Cow<'a, [Alarm]>),
     Ring(Alarm),
 }

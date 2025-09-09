@@ -9,7 +9,7 @@ rust-version.workspace = true
 edition.workspace = true
 
 [workspace]
-members = ["rezz", "cli", "gtk"]
+members = ["rezz", "cli", "gtk", "aevum"]
 
 [workspace.package]
 edition = "2024"
@@ -31,7 +31,7 @@ time = "0.3.29"
 tokio = "1.32.0"
 tokio-stream = "0.1.14"
 tracing = "0.1.37"
-tracing-subscriber = "0.3.17"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 uuid = "1.4.1"
 zbus = { version = "5.5.0", default-features = false }
 

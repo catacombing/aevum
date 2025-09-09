@@ -156,7 +156,7 @@ impl AlarmGtk {
                 _ = self.new_window_rx.recv() => self.open_window(),
                 Some(event) = subscriber.next() => match event {
                     // Handle new/removed alarms.
-                    Event::AlarmsChanged(alarms) => self.update_alarms(alarms),
+                    Event::AlarmsChanged(alarms) => self.update_alarms(&alarms),
                     // Handle ringing alarms.
                     Event::Ring(alarm) => {
                         // Ensure at least one window is open.
@@ -164,7 +164,7 @@ impl AlarmGtk {
                             self.open_window();
                         }
 
-                        // Ring any availabel window.
+                        // Ring any available window.
                         if let Some(window) = self.windows.values_mut().next() {
                             window.ring(alarm).await;
                         }
