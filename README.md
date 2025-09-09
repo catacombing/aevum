@@ -19,6 +19,26 @@ Aevum is compiled with cargo, which creates a binary at `target/release/aevum`:
 cargo build --release
 ```
 
-### CLI
+### CLI Examples
 
-![tmp](https://github.com/catacombing/alarm/assets/8886672/cc4b05f8-48e0-4fc2-886f-55bec261665e)
+List all pending alarms:
+
+```
+$ aevum-cli list
+ID                                    Alarm Time
+45ecd456-e151-4942-917f-58c953213edf  Wed, 10 Sep 2025 16:00:00 +0200
+```
+
+Create a new alarm at `16:00`:
+
+```
+$ aevum-cli add 16:00
+Added alarm with ID "45ecd456-e151-4942-917f-58c953213edf"
+```
+
+Delete an alarm:
+
+```
+$ aevum-cli remove 45ecd456-e151-4942-917f-58c953213edf
+Removed alarm with ID ["45ecd456-e151-4942-917f-58c953213edf"]
+```
