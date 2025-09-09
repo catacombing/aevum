@@ -1,16 +1,23 @@
-# Alarm — CLI/GTK4 alarm clock
+# Aevum
 
-Alarm is a [Rezz-based](./rezz) alarm clock which automatically handles suspend
-and reboot with optional logind support.
+<p>
+  <img src="../logo.svg" width="10%" align="left">
 
-## Screenshots
+  Aevum is an OpenGL alarm clock UI based on [Rezz](../rezz), which automatically
+  handles suspend and reboot with optional logind support.
 
-### GTK4 UI
-
-<p align="center">
-    <img src="https://github.com/catacombing/alarm/assets/8886672/fab5705e-8011-4c50-a445-3106b03614bb" width="45%"/>
-    <img src="https://github.com/catacombing/alarm/assets/8886672/362bfa3f-cd2b-44eb-b657-209f9ba43bce" width="45%"/>
+  <br clear="align"/>
 </p>
+
+<br />
+
+## Building from Source
+
+Aevum is compiled with cargo, which creates a binary at `target/release/aevum`:
+
+```sh
+cargo build --release
+```
 
 ### CLI
 

@@ -42,6 +42,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "aevum-cli"
+version = "1.1.1"
+dependencies = [
+ "alarm",
+ "clap",
+ "rezz",
+ "thiserror 2.0.12",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -62,19 +75,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "zbus",
-]
-
-[[package]]
-name = "alarm-cli"
-version = "1.1.1"
-dependencies = [
- "alarm",
- "clap",
- "rezz",
- "thiserror 2.0.12",
- "time",
- "tokio",
- "uuid",
 ]
 
 [[package]]
