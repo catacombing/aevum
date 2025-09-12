@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+- Alarm creation buttons for quickly adding fixed intervals of time
+
 ### Changed
 
 - Hours/Minute selection wheels now snap to closest value

@@ -42,3 +42,5 @@ This section documents the `[input]` table.
 |max_tap_distance|Square of the maximum distance before touch input is considered a drag|float|`400.0`|
 |velocity_interval|Milliseconds per velocity tick|integer|`30`|
 |velocity_friction|Percentage of velocity retained each tick|float|`0.85`|
+|quick_minutes_1|Minutes for quick action 1|integer|`90`|
+|quick_minutes_2|Minutes for quick action 2|integer|`480`|

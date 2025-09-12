@@ -10,6 +10,7 @@ use time::{Duration, OffsetDateTime, Time};
 use tracing::error;
 use uuid::Uuid;
 
+use crate::config::Input;
 use crate::geometry::{Point, Size, rect_contains};
 use crate::ui::window::TouchAction as WindowTouchAction;
 use crate::ui::{
@@ -67,18 +68,32 @@ impl CreateAlarm {
         // Clear background.
         canvas.clear(render_config.background);
 
+        // Draw text showing delta to alarm time.
+        let delta_rect = Self::delta_text_rect(self.size, self.scale);
+        self.draw_centered_text(canvas, render_config, delta_rect, &self.delta_text());
+
         // Draw time selection wheels.
         let hour_rect = Self::hour_carousel_rect(self.size, scale);
         self.hour_carousel.draw(scale, canvas, render_config, hour_rect);
         let minute_rect = Self::minute_carousel_rect(self.size, scale);
         self.minute_carousel.draw(scale, canvas, render_config, minute_rect);
 
-        self.draw_delta_text(canvas, render_config);
-
         // Draw the cancel creation button.
         let back_rect = Self::back_button_rect(self.size, scale);
         canvas.draw_rect(back_rect, &render_config.button_paint);
         Icon::Back.draw(canvas, scale, &render_config.icon_paint, back_rect);
+
+        // Draw quick-set buttons.
+
+        let quick_rect_1 = Self::quick_action_rect_1(self.size, scale);
+        canvas.draw_rect(quick_rect_1, &render_config.button_paint);
+        let quick_text_1 = self.quick_text(render_config.input_config.quick_minutes_1);
+        self.draw_centered_text(canvas, render_config, quick_rect_1, &quick_text_1);
+
+        let quick_rect_2 = Self::quick_action_rect_2(self.size, scale);
+        canvas.draw_rect(quick_rect_2, &render_config.button_paint);
+        let quick_text_2 = self.quick_text(render_config.input_config.quick_minutes_2);
+        self.draw_centered_text(canvas, render_config, quick_rect_2, &quick_text_2);
 
         // Draw the confirm creation button.
         let confirm_rect = Self::confirm_button_rect(self.size, scale);
@@ -86,10 +101,14 @@ impl CreateAlarm {
         Icon::Confirm.draw(canvas, scale, &render_config.icon_paint, confirm_rect);
     }
 
-    /// Draw text showing delta between current and alarm time.
-    fn draw_delta_text(&self, canvas: &Canvas, render_config: &RenderConfig) {
-        let delta_rect = Self::delta_text_rect(self.size, self.scale);
-
+    /// Draw text centered within a rectangle.
+    fn draw_centered_text(
+        &self,
+        canvas: &Canvas,
+        render_config: &RenderConfig,
+        rect: Rect,
+        text: &str,
+    ) {
         // Setup text style for alarm delta.
         let mut paragraph_style = ParagraphStyle::new();
         paragraph_style.set_text_style(&render_config.text_style);
@@ -97,13 +116,13 @@ impl CreateAlarm {
 
         // Create and layout the paragraph.
         let mut paragraph_builder = ParagraphBuilder::new(&paragraph_style, &render_config.fonts);
-        paragraph_builder.add_text(self.delta_text());
+        paragraph_builder.add_text(text);
         let mut paragraph = paragraph_builder.build();
-        paragraph.layout(delta_rect.right - delta_rect.left);
+        paragraph.layout(rect.right - rect.left);
 
         // Center paragraph vertically inside its rect.
-        let delta_y_offset = (delta_rect.bottom - delta_rect.top - paragraph.height()) / 2.;
-        paragraph.paint(canvas, Point::new(delta_rect.left, delta_rect.top + delta_y_offset));
+        let delta_y_offset = (rect.bottom - rect.top - paragraph.height()) / 2.;
+        paragraph.paint(canvas, Point::new(rect.left, rect.top + delta_y_offset));
     }
 
     /// Check whether the UI requires a redraw.
@@ -135,6 +154,8 @@ impl CreateAlarm {
         // Get button geometries.
         let confirm_rect = Self::confirm_button_rect(self.size, self.scale);
         let minute_rect = Self::minute_carousel_rect(self.size, self.scale);
+        let quick_rect_1 = Self::quick_action_rect_1(self.size, self.scale);
+        let quick_rect_2 = Self::quick_action_rect_2(self.size, self.scale);
         let hour_rect = Self::hour_carousel_rect(self.size, self.scale);
         let back_rect = Self::back_button_rect(self.size, self.scale);
 
@@ -150,6 +171,10 @@ impl CreateAlarm {
             self.touch_state.action = TouchAction::HourCarousel;
 
             self.hour_carousel.touch_down(point);
+        } else if rect_contains(quick_rect_1, point) {
+            self.touch_state.action = TouchAction::QuickAction1;
+        } else if rect_contains(quick_rect_2, point) {
+            self.touch_state.action = TouchAction::QuickAction2;
         } else {
             self.touch_state.action = TouchAction::None;
         }
@@ -169,7 +194,7 @@ impl CreateAlarm {
     }
 
     /// Handle touch release.
-    pub fn touch_up(&mut self) -> WindowTouchAction {
+    pub fn touch_up(&mut self, input_config: &Input) -> WindowTouchAction {
         match self.touch_state.action {
             // Switch to the list view.
             TouchAction::Back => {
@@ -199,6 +224,10 @@ impl CreateAlarm {
                     return WindowTouchAction::ListAlarmsView;
                 }
             },
+            // Add 90 minutes to the current alarm.
+            TouchAction::QuickAction1 => self.add_minutes(input_config.quick_minutes_1),
+            // Add 8 hours to the current alarm.
+            TouchAction::QuickAction2 => self.add_minutes(input_config.quick_minutes_2),
             TouchAction::MinuteCarousel => self.minute_carousel.touch_up(),
             TouchAction::HourCarousel => self.hour_carousel.touch_up(),
             _ => (),
@@ -229,26 +258,56 @@ impl CreateAlarm {
         Rect::new(x, y, x + button_size, y + button_size)
     }
 
-    /// Physical rectangle of the time delta text.
-    fn delta_text_rect(size: Size<f32>, scale: f64) -> Rect {
+    /// Physical rectangle of the left quick action button.
+    fn quick_action_rect_1(size: Size<f32>, scale: f64) -> Rect {
         let back_rect = Self::back_button_rect(size, scale);
-        let back_padding = (BUTTON_PADDING * scale) as f32;
+        let button_padding = (BUTTON_PADDING * scale) as f32;
+        let space = (CAROUSEL_SPACE * scale) as f32;
 
         let height = back_rect.bottom - back_rect.top;
-        let y = back_rect.top - back_padding - height;
+        let y = back_rect.top - button_padding - height;
+
+        let left = (OUTSIDE_PADDING * scale) as f32;
+        let right = (size.width - space) / 2.;
+
+        Rect::new(left, y, right, y + height)
+    }
+
+    /// Physical rectangle of the right quick action button.
+    fn quick_action_rect_2(size: Size<f32>, scale: f64) -> Rect {
+        let back_rect = Self::back_button_rect(size, scale);
+        let button_padding = (BUTTON_PADDING * scale) as f32;
+        let space = (CAROUSEL_SPACE * scale) as f32;
+
+        let height = back_rect.bottom - back_rect.top;
+        let y = back_rect.top - button_padding - height;
+
+        let left = (size.width + space) / 2.;
+        let right = size.width - (OUTSIDE_PADDING * scale) as f32;
+
+        Rect::new(left, y, right, y + height)
+    }
+
+    /// Physical rectangle of the time delta text.
+    fn delta_text_rect(size: Size<f32>, scale: f64) -> Rect {
+        let hour_rect = Self::hour_carousel_rect(size, scale);
+        let padding = (BUTTON_PADDING * scale) as f32;
+        let height = (BUTTON_HEIGHT * scale) as f32;
+
+        let y = hour_rect.top - padding - height;
 
         Rect::new(0., y, size.width, y + height)
     }
 
     /// Physical rectangle of the hour selection wheel.
     fn hour_carousel_rect(size: Size<f32>, scale: f64) -> Rect {
-        let delta_rect = Self::delta_text_rect(size, scale);
-        let delta_padding = (BUTTON_PADDING * scale) as f32;
+        let quick_rect = Self::quick_action_rect_1(size, scale);
+        let button_padding = (BUTTON_PADDING * scale) as f32;
         let item_size = (CAROUSEL_ITEM_SIZE * scale) as f32;
         let space = (CAROUSEL_SPACE * scale) as f32;
 
         let height = item_size * 3.;
-        let y = delta_rect.top - delta_padding - height;
+        let y = quick_rect.top - button_padding - height;
         let x = size.width / 2. - item_size - space / 2.;
 
         Rect::new(x, y, x + item_size, y + height)
@@ -288,6 +347,15 @@ impl CreateAlarm {
         }
     }
 
+    // Text label for a quick action interval.
+    fn quick_text(&self, minutes: u16) -> String {
+        if minutes % 60 == 0 {
+            format!("+ {} Hours", minutes / 60)
+        } else {
+            format!("+ {} Minutes", minutes)
+        }
+    }
+
     /// Get the currently selected alarm time.
     fn alarm_time(&self) -> OffsetDateTime {
         let minute = self.minute_carousel.value();
@@ -304,6 +372,18 @@ impl CreateAlarm {
         date_time = date_time.replace_time(time);
 
         date_time
+    }
+
+    /// Add `interval` minutes to the current alarm.
+    fn add_minutes(&mut self, interval: u16) {
+        let minutes = self.minute_carousel.value() as usize;
+        let hours = self.hour_carousel.value() as usize;
+
+        let new_minutes = (minutes + interval as usize) % 60;
+        let new_hours = hours + (minutes + interval as usize) / 60;
+
+        self.minute_carousel.scroll_to(new_minutes / 5);
+        self.hour_carousel.scroll_to(new_hours);
     }
 }
 
@@ -324,6 +404,8 @@ enum TouchAction {
     Back,
     MinuteCarousel,
     HourCarousel,
+    QuickAction1,
+    QuickAction2,
 }
 
 /// A text item list with infinite scrolling.

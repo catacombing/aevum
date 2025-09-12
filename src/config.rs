@@ -99,11 +99,22 @@ pub struct Input {
     pub velocity_interval: u16,
     /// Percentage of velocity retained each tick.
     pub velocity_friction: f64,
+
+    /// Minutes for quick action 1.
+    pub quick_minutes_1: u16,
+    /// Minutes for quick action 2.
+    pub quick_minutes_2: u16,
 }
 
 impl Default for Input {
     fn default() -> Self {
-        Self { velocity_interval: 30, velocity_friction: 0.85, max_tap_distance: 400. }
+        Self {
+            velocity_friction: 0.85,
+            max_tap_distance: 400.,
+            velocity_interval: 30,
+            quick_minutes_2: 480,
+            quick_minutes_1: 90,
+        }
     }
 }
 

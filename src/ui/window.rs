@@ -262,7 +262,7 @@ impl Window {
     pub fn touch_up(&mut self) {
         let action = match &self.view {
             View::ListAlarms => self.list_alarms.touch_up(),
-            View::CreateAlarm => self.create_alarm.touch_up(),
+            View::CreateAlarm => self.create_alarm.touch_up(&self.render_config.input_config),
             View::RingAlarm(..) => self.ring_alarm.touch_up(),
         };
 
