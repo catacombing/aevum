@@ -15,7 +15,7 @@
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/830e06af-1420-41db-93fe-627f42c7af7c" width="30%"/>
-  <img src="https://github.com/user-attachments/assets/3712883f-c1d6-4050-8927-85b28a5e793d" width="30%"/>
+  <img src="https://github.com/user-attachments/assets/b5e2d858-96d8-434d-91c7-20a95d37703b" width="30%"/>
 </p>
 
 ## Building from Source
