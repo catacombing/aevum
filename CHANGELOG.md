@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Alarm creation buttons for quickly adding fixed intervals of time
+- Colon separator between hour and minute carousels
 
 ### Changed
 

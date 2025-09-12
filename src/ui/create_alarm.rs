@@ -26,6 +26,9 @@ const CAROUSEL_SPACE: f64 = 50.;
 /// Alarm ring duration in seconds.
 const RING_DURATION: u32 = 15 * 60;
 
+/// Size of the hour/time separator colons at scale 1.
+const COLON_SIZE: f64 = 6.;
+
 /// Alarm creation UI state.
 pub struct CreateAlarm {
     touch_state: TouchState,
@@ -77,6 +80,11 @@ impl CreateAlarm {
         self.hour_carousel.draw(scale, canvas, render_config, hour_rect);
         let minute_rect = Self::minute_carousel_rect(self.size, scale);
         self.minute_carousel.draw(scale, canvas, render_config, minute_rect);
+
+        // Draw hour/minute separator colons.
+        let (colon_rect_top, colon_rect_bottom) = Self::colon_rects(self.size, scale);
+        canvas.draw_rect(colon_rect_top, &render_config.text_paint);
+        canvas.draw_rect(colon_rect_bottom, &render_config.text_paint);
 
         // Draw the cancel creation button.
         let back_rect = Self::back_button_rect(self.size, scale);
@@ -322,6 +330,22 @@ impl CreateAlarm {
         let x = size.width / 2. + space / 2.;
 
         Rect::new(x, hour_rect.top, x + item_size, hour_rect.bottom)
+    }
+
+    /// Physical rectangles of the hour/minute separator colons.
+    fn colon_rects(size: Size<f32>, scale: f64) -> (Rect, Rect) {
+        let hour_rect = Self::hour_carousel_rect(size, scale);
+        let colon_size = (COLON_SIZE * scale) as f32;
+
+        let x = size.width / 2. - colon_size / 2.;
+        let hour_center = hour_rect.top + (hour_rect.bottom - hour_rect.top) / 2.;
+        let top_y = hour_center - 1.5 * colon_size;
+        let bottom_y = hour_center + 0.5 * colon_size;
+
+        let top = Rect::new(x, top_y, x + colon_size, top_y + colon_size);
+        let bottom = Rect::new(x, bottom_y, x + colon_size, bottom_y + colon_size);
+
+        (top, bottom)
     }
 
     /// Text label for delta between current and alarm time.
