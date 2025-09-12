@@ -199,6 +199,8 @@ impl CreateAlarm {
                     return WindowTouchAction::ListAlarmsView;
                 }
             },
+            TouchAction::MinuteCarousel => self.minute_carousel.touch_up(),
+            TouchAction::HourCarousel => self.hour_carousel.touch_up(),
             _ => (),
         }
 
@@ -328,6 +330,7 @@ enum TouchAction {
 pub struct TextCarousel {
     velocity: ScrollVelocity,
     touch_point: Point<f64>,
+    touch_active: bool,
     scroll_offset: f64,
 
     items: Vec<String>,
@@ -343,6 +346,7 @@ impl TextCarousel {
             dirty: true,
             scale: 1.,
             scroll_offset: Default::default(),
+            touch_active: Default::default(),
             touch_point: Default::default(),
             velocity: Default::default(),
         }
@@ -363,6 +367,11 @@ impl TextCarousel {
 
         // Ensure offset is correct in case scale changed.
         self.clamp_scroll_offset();
+
+        // Snap scroll offset to nearest item after drag completion.
+        if !self.velocity.is_moving() && !self.touch_active {
+            self.scroll_offset = self.rounded_offset();
+        }
 
         // Draw wheel background.
         canvas.draw_rect(rect, &render_config.button_paint);
@@ -407,7 +416,9 @@ impl TextCarousel {
     }
 
     fn dirty(&self) -> bool {
-        self.dirty || self.velocity.is_moving()
+        self.dirty
+            || self.velocity.is_moving()
+            || (!self.touch_active && self.scroll_offset != self.rounded_offset())
     }
 
     /// Handle touch press.
@@ -416,6 +427,7 @@ impl TextCarousel {
         self.velocity.set(0.);
 
         self.touch_point = physical_point;
+        self.touch_active = true;
     }
 
     /// Handle touch motion.
@@ -432,6 +444,11 @@ impl TextCarousel {
         self.scroll_offset += delta;
         self.clamp_scroll_offset();
         self.dirty |= self.scroll_offset != old_offset;
+    }
+
+    /// Handle touch release.
+    fn touch_up(&mut self) {
+        self.touch_active = false;
     }
 
     /// Clamp alarm list viewport offset.
@@ -466,5 +483,19 @@ impl TextCarousel {
         let item_height = CAROUSEL_ITEM_SIZE * self.scale;
         self.scroll_offset = -item_height * index as f64;
         self.dirty = true;
+    }
+
+    /// Get the nearest item offset.
+    fn rounded_offset(&self) -> f64 {
+        let item_height = CAROUSEL_ITEM_SIZE * self.scale;
+
+        let remainder = self.scroll_offset % item_height;
+        let mut offset = self.scroll_offset - remainder;
+
+        if remainder.abs() >= item_height / 2. {
+            offset += item_height.copysign(self.scroll_offset);
+        }
+
+        offset
     }
 }
