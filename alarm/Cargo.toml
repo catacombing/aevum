@@ -10,10 +10,12 @@ edition.workspace = true
 
 [dependencies]
 libc.workspace = true
+libpulse-binding.workspace = true
 rezz.workspace = true
 rodio.workspace = true
 thiserror.workspace = true
 time = { workspace = true, features = ["macros", "formatting", "local-offset"] }
 tokio-stream.workspace = true
 tokio = { workspace = true, features = ["macros", "signal"] }
+tracing.workspace = true
 zbus = { workspace = true, features = ["tokio"] }
