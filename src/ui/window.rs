@@ -70,8 +70,8 @@ impl Window {
             WindowDecorations::RequestClient,
             &queue,
         );
-        xdg_window.set_title("Pinax");
-        xdg_window.set_app_id("Pinax");
+        xdg_window.set_title("Aevum");
+        xdg_window.set_app_id("Aevum");
         xdg_window.commit();
 
         // Create surface's Wayland global handles.
