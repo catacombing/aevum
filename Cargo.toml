@@ -44,8 +44,8 @@ glutin = { version = "0.32.3", default-features = false, features = ["egl", "way
 raw-window-handle = "0.6.2"
 rezz.workspace = true
 serde.workspace = true
-skia-safe = { version = "0.87.0", features = ["all-linux", "textlayout"] }
-smithay-client-toolkit = { version = "0.19.2", default-features = false, features = ["xkbcommon"] }
+skia-safe = { version = "0.88.0", features = ["all-linux", "textlayout"] }
+smithay-client-toolkit = { version = "0.20.0", default-features = false, features = ["xkbcommon"] }
 thiserror.workspace = true
 time = { workspace = true, features = ["macros", "formatting", "local-offset"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
