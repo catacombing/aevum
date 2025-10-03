@@ -37,7 +37,7 @@ zbus = { version = "5.5.0", default-features = false }
 
 [dependencies]
 alarm.workspace = true
-calloop = { version = "0.14.2", features = ["executor"] }
+calloop = "0.14.2"
 calloop-wayland-source = "0.4.0"
 configory = { version = "0.5.2", features = ["docgen", "log"] }
 glutin = { version = "0.32.3", default-features = false, features = ["egl", "wayland"] }

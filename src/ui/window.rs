@@ -63,8 +63,14 @@ impl Window {
         let raw_display = RawDisplayHandle::Wayland(wayland_display);
         let egl_display = unsafe { Display::new(raw_display, DisplayApiPreference::Egl)? };
 
-        // Create the XDG shell window.
+        // Create surface's Wayland global handles.
         let surface = protocol_states.compositor.create_surface(&queue);
+        if let Some(fractional_scale) = &protocol_states.fractional_scale {
+            fractional_scale.fractional_scaling(&queue, &surface);
+        }
+        let viewport = protocol_states.viewporter.viewport(&queue, &surface);
+
+        // Create the XDG shell window.
         let xdg_window = protocol_states.xdg_shell.create_window(
             surface.clone(),
             WindowDecorations::RequestClient,
@@ -73,12 +79,6 @@ impl Window {
         xdg_window.set_title("Aevum");
         xdg_window.set_app_id("Aevum");
         xdg_window.commit();
-
-        // Create surface's Wayland global handles.
-        if let Some(fractional_scale) = &protocol_states.fractional_scale {
-            fractional_scale.fractional_scaling(&queue, &surface);
-        }
-        let viewport = protocol_states.viewporter.viewport(&queue, &surface);
 
         // Create OpenGL renderer.
         let renderer = Renderer::new(egl_display, surface);
