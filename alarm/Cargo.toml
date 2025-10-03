@@ -1,6 +1,6 @@
 [package]
 name = "alarm"
-version = "2.1.0"
+version = "2.2.1"
 description = "Rezz alarm clock client interface"
 authors = ["Christian Duerr <contact@christianduerr.com>"]
 repository = "https://github.com/catacombing/alarm"
