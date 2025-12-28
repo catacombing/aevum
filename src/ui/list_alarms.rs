@@ -305,7 +305,7 @@ impl ListAlarms {
         let alarm_height = last_alarm_rect.bottom - last_alarm_rect.top;
         let bottom_relative = last_alarm_rect.bottom - point.y;
         let rindex = (bottom_relative / alarm_height).floor() as usize;
-        let index = self.alarms.len().saturating_sub(rindex + 1);
+        let index = self.alarms.len().checked_sub(rindex + 1)?;
 
         // Check if touch is within close button bounds.
         let delete_alarm_rect = Self::delete_alarm_rect(self.size, self.scale);
