@@ -80,7 +80,7 @@ struct State {
 
     terminated: bool,
 
-    _config_manager: ConfigManager,
+    _config_manager: ConfigManager<ConfigEventHandler>,
 }
 
 impl State {

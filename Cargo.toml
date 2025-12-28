@@ -39,12 +39,12 @@ zbus = { version = "5.5.0", default-features = false }
 alarm.workspace = true
 calloop = "0.14.2"
 calloop-wayland-source = "0.4.0"
-configory = { version = "0.5.2", features = ["docgen", "log"] }
+configory = { version = "0.6.2", features = ["docgen", "log"] }
 glutin = { version = "0.32.3", default-features = false, features = ["egl", "wayland"] }
 raw-window-handle = "0.6.2"
 rezz.workspace = true
 serde.workspace = true
-skia-safe = { version = "0.88.0", features = ["all-linux", "textlayout"] }
+skia-safe = { version = "0.91.1", features = ["all-linux", "textlayout"] }
 smithay-client-toolkit = { version = "0.20.0", default-features = false, features = ["xkbcommon"] }
 thiserror.workspace = true
 time = { workspace = true, features = ["macros", "formatting", "local-offset"] }

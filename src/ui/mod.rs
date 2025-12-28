@@ -8,7 +8,7 @@ pub mod window;
 use std::time::Instant;
 
 use skia_safe::textlayout::{FontCollection, TextStyle};
-use skia_safe::{Canvas, Color4f, FontMgr, Paint, Path, Rect};
+use skia_safe::{Canvas, Color4f, FontMgr, Paint, PathBuilder, Rect};
 
 use crate::config::{Config, Input};
 use crate::geometry::Point;
@@ -160,34 +160,34 @@ impl Icon {
 
         match self {
             Icon::Confirm => {
-                let mut path = Path::new();
+                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0.105, rect.top + size * 0.625));
                 path.line_to(Point::new(rect.left + size * 0.438, rect.top + size * 0.875));
                 path.line_to(Point::new(rect.left + size * 0.896, rect.top + size * 0.208));
-                canvas.draw_path(&path, paint);
+                canvas.draw_path(&path.snapshot(), paint);
             },
             Icon::Delete => {
-                let mut path = Path::new();
+                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0., rect.top + size * 0.));
                 path.line_to(Point::new(rect.left + size * 1., rect.top + size * 1.));
                 path.move_to(Point::new(rect.left + size * 1., rect.top + size * 0.));
                 path.line_to(Point::new(rect.left + size * 0., rect.top + size * 1.));
-                canvas.draw_path(&path, paint);
+                canvas.draw_path(&path.snapshot(), paint);
             },
             Icon::Back => {
-                let mut path = Path::new();
+                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0.667, rect.top + size * 0.125));
                 path.line_to(Point::new(rect.left + size * 0.333, rect.top + size * 0.5));
                 path.line_to(Point::new(rect.left + size * 0.667, rect.top + size * 0.875));
-                canvas.draw_path(&path, paint);
+                canvas.draw_path(&path.snapshot(), paint);
             },
             Icon::Plus => {
-                let mut path = Path::new();
+                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0.5, rect.top + size * 0.));
                 path.line_to(Point::new(rect.left + size * 0.5, rect.top + size * 1.));
                 path.move_to(Point::new(rect.left + size * 0., rect.top + size * 0.5));
                 path.line_to(Point::new(rect.left + size * 1., rect.top + size * 0.5));
-                canvas.draw_path(&path, paint);
+                canvas.draw_path(&path.snapshot(), paint);
             },
         }
     }
