@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+## 2.2.2 - 2025-12-28
+
 ### Fixed
 
 - Crash when clicking in empty alarms list
