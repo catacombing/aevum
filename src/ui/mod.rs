@@ -158,38 +158,33 @@ impl Icon {
         rect.top += (height - size) / 2.;
         rect.bottom -= (height - size) / 2.;
 
+        let mut path = PathBuilder::new();
+        path.set_is_volatile(true);
         match self {
             Icon::Confirm => {
-                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0.105, rect.top + size * 0.625));
                 path.line_to(Point::new(rect.left + size * 0.438, rect.top + size * 0.875));
                 path.line_to(Point::new(rect.left + size * 0.896, rect.top + size * 0.208));
-                canvas.draw_path(&path.snapshot(), paint);
             },
             Icon::Delete => {
-                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0., rect.top + size * 0.));
                 path.line_to(Point::new(rect.left + size * 1., rect.top + size * 1.));
                 path.move_to(Point::new(rect.left + size * 1., rect.top + size * 0.));
                 path.line_to(Point::new(rect.left + size * 0., rect.top + size * 1.));
-                canvas.draw_path(&path.snapshot(), paint);
             },
             Icon::Back => {
-                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0.667, rect.top + size * 0.125));
                 path.line_to(Point::new(rect.left + size * 0.333, rect.top + size * 0.5));
                 path.line_to(Point::new(rect.left + size * 0.667, rect.top + size * 0.875));
-                canvas.draw_path(&path.snapshot(), paint);
             },
             Icon::Plus => {
-                let mut path = PathBuilder::new();
                 path.move_to(Point::new(rect.left + size * 0.5, rect.top + size * 0.));
                 path.line_to(Point::new(rect.left + size * 0.5, rect.top + size * 1.));
                 path.move_to(Point::new(rect.left + size * 0., rect.top + size * 0.5));
                 path.line_to(Point::new(rect.left + size * 1., rect.top + size * 0.5));
-                canvas.draw_path(&path.snapshot(), paint);
             },
         }
+        canvas.draw_path(&path.detach(), paint);
     }
 }
 
