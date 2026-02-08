@@ -29,7 +29,7 @@ use crate::{Error, State};
 /// Wayland window.
 pub struct Window {
     pub queue: QueueHandle<State>,
-    pub initial_draw_done: bool,
+    pub initial_configure_done: bool,
 
     connection: Connection,
     xdg_window: XdgWindow,
@@ -97,7 +97,7 @@ impl Window {
             stalled: true,
             dirty: true,
             scale: 1.,
-            initial_draw_done: Default::default(),
+            initial_configure_done: Default::default(),
             create_alarm: Default::default(),
             list_alarms: Default::default(),
             ring_alarm: Default::default(),
@@ -109,11 +109,10 @@ impl Window {
     /// Redraw the window.
     pub fn draw(&mut self) {
         // Stall rendering if nothing changed since last redraw.
-        if !self.dirty() {
+        if !self.dirty() || !self.initial_configure_done {
             self.stalled = true;
             return;
         }
-        self.initial_draw_done = true;
         self.dirty = false;
 
         // Update viewporter logical render size.
@@ -199,6 +198,7 @@ impl Window {
             return;
         }
 
+        self.initial_configure_done = true;
         self.size = size;
         self.dirty = true;
 
