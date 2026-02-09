@@ -4,8 +4,8 @@ use std::mem;
 
 use alarm::Alarms;
 use rezz::Alarm;
-use skia_safe::textlayout::{ParagraphBuilder, ParagraphStyle};
-use skia_safe::{Canvas, Rect};
+use skia_safe::textlayout::{ParagraphBuilder, ParagraphStyle, TextAlign};
+use skia_safe::{Canvas, Color4f, Paint, Rect};
 use time::macros::format_description;
 use time::{Duration, OffsetDateTime, UtcOffset};
 use tracing::error;
@@ -35,6 +35,7 @@ pub struct ListAlarms {
     size: Size<f32>,
     scale: f64,
 
+    error: &'static str,
     alarms: Vec<Alarm>,
 
     dirty: bool,
@@ -49,6 +50,7 @@ impl Default for ListAlarms {
             touch_state: Default::default(),
             velocity: Default::default(),
             alarms: Default::default(),
+            error: Default::default(),
             size: Default::default(),
         }
     }
@@ -70,6 +72,12 @@ impl ListAlarms {
 
         // Clear background.
         canvas.clear(render_config.background);
+
+        // If there was a fatal error, just render the error text.
+        if !self.error.is_empty() {
+            self.draw_fatal_error(canvas, render_config);
+            return;
+        }
 
         // Define clipping mask for alarms.
         let mut alarm_rect = Self::last_alarm_rect(self.size, scale);
@@ -156,6 +164,33 @@ impl ListAlarms {
         date_paragraph.paint(canvas, Point::new(rect.left, time_y + time_height));
     }
 
+    /// Render terminal error message.
+    fn draw_fatal_error(&self, canvas: &Canvas, render_config: &RenderConfig) {
+        // Create red paint, since we don't want to keep it on the `render_config`.
+        let mut paint = Paint::default();
+        paint.set_color4f(Color4f::new(0.67, 0.26, 0.26, 1.), None);
+        let mut text_style = render_config.text_style.clone();
+        text_style.set_foreground_paint(&paint);
+
+        let mut style = ParagraphStyle::new();
+        style.set_text_style(&text_style);
+        style.set_text_align(TextAlign::Center);
+
+        let mut builder = ParagraphBuilder::new(&style, &render_config.fonts);
+        builder.add_text(self.error);
+        let mut paragraph = builder.build();
+
+        // Layout text with horizontal padding.
+        // let size: Size<f32> = (size * self.scale).into();
+        let padding = ALARMS_PADDING as f32 * self.scale as f32;
+        let width = self.size.width - 2. * padding;
+        paragraph.layout(width);
+
+        // Render text vertically centered.
+        let y = (self.size.height - paragraph.height()) / 2.;
+        paragraph.paint(canvas, Point::new(padding, y));
+    }
+
     /// Check whether the UI requires a redraw.
     pub fn dirty(&self) -> bool {
         self.dirty || self.velocity.is_moving()
@@ -166,6 +201,12 @@ impl ListAlarms {
         self.alarms.clear();
         self.alarms.append(&mut alarms);
 
+        self.dirty = true;
+    }
+
+    /// Set error string for terminal issues.
+    pub fn set_fatal_error(&mut self, error: &'static str) {
+        self.error = error;
         self.dirty = true;
     }
 

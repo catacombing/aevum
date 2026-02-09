@@ -192,6 +192,12 @@ impl Window {
         self.unstall();
     }
 
+    /// Set error string for terminal issues.
+    pub fn set_fatal_error(&mut self, error: &'static str) {
+        self.list_alarms.set_fatal_error(error);
+        self.unstall();
+    }
+
     /// Update the window's logical size.
     pub fn set_size(&mut self, compositor: &CompositorState, size: Size) {
         if self.size == size {

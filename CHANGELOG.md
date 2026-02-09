@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+- UI error message when `rezz` service isn't running
+
 ## 2.2.3 - 2026-02-08
 
 ### Fixed

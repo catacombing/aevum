@@ -167,7 +167,12 @@ impl State {
                 state.window.set_alarms(alarms.to_vec());
             },
             ChannelEvent::Msg(AlarmEvent::Ring(alarm)) => state.window.ring(alarm),
-            ChannelEvent::Closed => state.terminated = true,
+            ChannelEvent::Closed => {
+                state.window.set_fatal_error(
+                    "Rezz systemd service error\n\nEnsure the service is running and restart \
+                     Aevum\n\nCheck STDERR logs for details",
+                );
+            },
         })?;
 
         Ok(())
