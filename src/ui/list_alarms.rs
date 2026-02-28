@@ -1,6 +1,7 @@
 //! Alarm overview UI.
 
 use std::mem;
+use std::time::Instant;
 
 use alarm::Alarms;
 use rezz::Alarm;
@@ -23,14 +24,17 @@ const ALARMS_PADDING: f64 = 25.;
 /// Height of a single alarm in the list at scale 1.
 const ALARM_HEIGHT: f64 = 80.;
 
-/// Width and height of the alarm deletion button at scale 1.
-const DELETE_SIZE: f64 = 40.;
+/// Width and height of buttons in the alarm list at scale 1.
+const LIST_BUTTON_SIZE: f64 = 40.;
 
 /// Alarm list UI state.
 pub struct ListAlarms {
     velocity: ScrollVelocity,
     touch_state: TouchState,
     scroll_offset: f64,
+
+    stopwatch_start: Option<Instant>,
+    stopwatch_text: String,
 
     size: Size<f32>,
     scale: f64,
@@ -44,8 +48,10 @@ pub struct ListAlarms {
 impl Default for ListAlarms {
     fn default() -> Self {
         Self {
+            stopwatch_text: "00:00.00".into(),
             dirty: true,
             scale: 1.,
+            stopwatch_start: Default::default(),
             scroll_offset: Default::default(),
             touch_state: Default::default(),
             velocity: Default::default(),
@@ -102,6 +108,9 @@ impl ListAlarms {
 
         // Reset alarms clipping mask.
         canvas.restore();
+
+        // Draw the stopwatch.
+        self.draw_stopwatch(canvas, render_config);
 
         // Draw the new alarm button.
         let new_rect = Self::new_button_rect(self.size, scale);
@@ -164,6 +173,55 @@ impl ListAlarms {
         date_paragraph.paint(canvas, Point::new(rect.left, time_y + time_height));
     }
 
+    // Draw the stopwatch.
+    fn draw_stopwatch(&mut self, canvas: &Canvas, render_config: &RenderConfig) {
+        let stopwatch_toggle_rect = Self::stopwatch_toggle_rect(self.size, self.scale);
+        let stopwatch_rect = Self::stopwatch_rect(self.size, self.scale);
+
+        let icon = match self.stopwatch_start {
+            Some(start) => {
+                let mut elapsed = start.elapsed().as_millis();
+
+                let millis = elapsed % 1000;
+                elapsed /= 1000;
+                let seconds = elapsed % 60;
+                elapsed /= 60;
+                let minutes = elapsed % 60;
+                elapsed /= 60;
+                let hours = elapsed % 60;
+
+                self.stopwatch_text = if hours > 0 {
+                    format!("{hours}:{minutes:0>2}:{seconds:0>2}.{millis:0>3}")
+                } else {
+                    format!("{minutes:0>2}:{seconds:0>2}.{millis:0>3}")
+                };
+
+                Icon::Stop
+            },
+            None => Icon::Play,
+        };
+
+        // Draw toggle button.
+        icon.draw(canvas, self.scale, &render_config.icon_paint, stopwatch_toggle_rect);
+
+        // Draw current stopwatch time.
+
+        let mut time_style = ParagraphStyle::new();
+        time_style.set_text_style(&render_config.heading_text_style);
+
+        let mut paragraph_builder = ParagraphBuilder::new(&time_style, &render_config.fonts);
+        paragraph_builder.add_text(&self.stopwatch_text);
+
+        let mut paragraph = paragraph_builder.build();
+        paragraph.layout(stopwatch_rect.right - stopwatch_rect.left);
+
+        // Calculate offset to center the text.
+        let time_height = paragraph.height();
+        let y_offset = (stopwatch_rect.bottom - stopwatch_rect.top - time_height) / 2.;
+
+        paragraph.paint(canvas, Point::new(stopwatch_rect.left, stopwatch_rect.top + y_offset));
+    }
+
     /// Render terminal error message.
     fn draw_fatal_error(&self, canvas: &Canvas, render_config: &RenderConfig) {
         // Create red paint, since we don't want to keep it on the `render_config`.
@@ -193,7 +251,7 @@ impl ListAlarms {
 
     /// Check whether the UI requires a redraw.
     pub fn dirty(&self) -> bool {
-        self.dirty || self.velocity.is_moving()
+        self.dirty || self.velocity.is_moving() || self.stopwatch_start.is_some()
     }
 
     /// Update the list of alarms.
@@ -221,10 +279,13 @@ impl ListAlarms {
         self.touch_state.start = point;
 
         // Get button geometries.
+        let stopwatch_toggle_rect = Self::stopwatch_toggle_rect(self.size, self.scale);
         let new_rect = Self::new_button_rect(self.size, self.scale);
 
         if rect_contains(new_rect, point) {
             self.touch_state.action = TouchAction::CreateAlarm;
+        } else if rect_contains(stopwatch_toggle_rect, point) {
+            self.touch_state.action = TouchAction::ToggleStopwatch;
         } else if let Some((alarm, delete)) = self.alarm_at(point.into()) {
             self.touch_state.action = TouchAction::AlarmTap(alarm.id.clone(), delete);
         } else {
@@ -263,6 +324,16 @@ impl ListAlarms {
     /// Handle touch release.
     pub fn touch_up(&mut self) -> WindowTouchAction {
         match mem::take(&mut self.touch_state.action) {
+            // Toggle the stopwatch.
+            TouchAction::ToggleStopwatch => {
+                let rect = Self::stopwatch_toggle_rect(self.size, self.scale);
+                if rect_contains(rect, self.touch_state.point)
+                    && self.stopwatch_start.take().is_none()
+                {
+                    self.stopwatch_start = Some(Instant::now());
+                }
+                self.dirty = true;
+            },
             // Switch to the alarm view.
             TouchAction::CreateAlarm => {
                 let rect = Self::new_button_rect(self.size, self.scale);
@@ -297,8 +368,8 @@ impl ListAlarms {
         Rect::new(x, y, x + button_width, y + button_height)
     }
 
-    /// Physical rectangle of the bottommost alarm.
-    fn last_alarm_rect(size: Size<f32>, scale: f64) -> Rect {
+    /// Physical rectangle of the stopwatch
+    fn stopwatch_rect(size: Size<f32>, scale: f64) -> Rect {
         let new_rect = Self::new_button_rect(size, scale);
         let outside_padding = (OUTSIDE_PADDING * scale) as f32;
         let alarms_padding = (ALARMS_PADDING * scale) as f32;
@@ -313,12 +384,36 @@ impl ListAlarms {
         Rect::new(x, y, x + width, y + height)
     }
 
+    /// Physical rectangle of the stopwatch start/stop button.
+    fn stopwatch_toggle_rect(size: Size<f32>, scale: f64) -> Rect {
+        let stopwatch_rect = Self::stopwatch_rect(size, scale);
+
+        let size = (LIST_BUTTON_SIZE * scale) as f32;
+        let padding = (stopwatch_rect.bottom - stopwatch_rect.top - size) / 2.;
+
+        let x = stopwatch_rect.right - padding - size;
+        let y = stopwatch_rect.top + padding;
+
+        Rect::new(x, y, x + size, y + size)
+    }
+
+    /// Physical rectangle of the bottommost alarm.
+    fn last_alarm_rect(size: Size<f32>, scale: f64) -> Rect {
+        let mut rect = Self::stopwatch_rect(size, scale);
+
+        let height = rect.bottom - rect.top;
+        rect.bottom -= height;
+        rect.top -= height;
+
+        rect
+    }
+
     /// Physical rectangle of the alarm removal button relative to the alarm
     /// origin.
     fn delete_alarm_rect(size: Size<f32>, scale: f64) -> Rect {
         let alarm_rect = Self::last_alarm_rect(size, scale);
 
-        let size = (DELETE_SIZE * scale) as f32;
+        let size = (LIST_BUTTON_SIZE * scale) as f32;
         let padding = (alarm_rect.bottom - alarm_rect.top - size) / 2.;
 
         let x = alarm_rect.right - alarm_rect.left - padding - size;
@@ -396,7 +491,8 @@ struct TouchState {
 enum TouchAction {
     #[default]
     None,
-    CreateAlarm,
     AlarmTap(String, bool),
+    ToggleStopwatch,
+    CreateAlarm,
     AlarmDrag,
 }

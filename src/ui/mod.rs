@@ -140,7 +140,9 @@ enum Icon {
     Confirm,
     Delete,
     Back,
+    Play,
     Plus,
+    Stop,
 }
 
 impl Icon {
@@ -177,11 +179,24 @@ impl Icon {
                 path.line_to(Point::new(rect.left + size * 0.333, rect.top + size * 0.5));
                 path.line_to(Point::new(rect.left + size * 0.667, rect.top + size * 0.875));
             },
+            Icon::Stop => {
+                path.move_to(Point::new(rect.left + size * 0.25, rect.top + size * 0.25));
+                path.line_to(Point::new(rect.left + size * 0.75, rect.top + size * 0.25));
+                path.line_to(Point::new(rect.left + size * 0.75, rect.top + size * 0.75));
+                path.line_to(Point::new(rect.left + size * 0.25, rect.top + size * 0.75));
+                path.close();
+            },
             Icon::Plus => {
                 path.move_to(Point::new(rect.left + size * 0.5, rect.top + size * 0.));
                 path.line_to(Point::new(rect.left + size * 0.5, rect.top + size * 1.));
                 path.move_to(Point::new(rect.left + size * 0., rect.top + size * 0.5));
                 path.line_to(Point::new(rect.left + size * 1., rect.top + size * 0.5));
+            },
+            Icon::Play => {
+                path.move_to(Point::new(rect.left + size * 0.25, rect.top + size * 0.15));
+                path.line_to(Point::new(rect.left + size * 0.75, rect.top + size * 0.5));
+                path.line_to(Point::new(rect.left + size * 0.25, rect.top + size * 0.85));
+                path.close();
             },
         }
         canvas.draw_path(&path.detach(), paint);
