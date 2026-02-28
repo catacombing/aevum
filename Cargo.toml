@@ -13,7 +13,7 @@ members = ["rezz", "cli", "alarm"]
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.87.0"
 
 [workspace.dependencies]
 alarm = { version = "2.0.0", path = "./alarm" }
@@ -44,7 +44,7 @@ glutin = { version = "0.32.3", default-features = false, features = ["egl", "way
 raw-window-handle = "0.6.2"
 rezz.workspace = true
 serde.workspace = true
-skia-safe = { version = "0.91.1", features = ["all-linux", "textlayout"] }
+skia-safe = { version = "0.93.1", features = ["all-linux", "textlayout"] }
 smithay-client-toolkit = { version = "0.20.0", default-features = false, features = ["xkbcommon"] }
 thiserror.workspace = true
 time = { workspace = true, features = ["macros", "formatting", "local-offset"] }
