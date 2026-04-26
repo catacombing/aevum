@@ -1,6 +1,6 @@
 [package]
 name = "aevum"
-version = "2.3.0"
+version = "2.3.1"
 description = "Alarm clock"
 authors = ["Christian Duerr <contact@christianduerr.com>"]
 repository = "https://github.com/catacombing/alarm"
@@ -16,7 +16,7 @@ edition = "2024"
 rust-version = "1.87.0"
 
 [workspace.dependencies]
-alarm = { version = "2.0.0", path = "./alarm" }
+alarm = { version = "0.1.0", path = "./alarm" }
 clap = "4.4.4"
 futures-util = "0.3.31"
 libc = "0.2.148"

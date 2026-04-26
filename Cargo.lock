@@ -10,7 +10,7 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "aevum"
-version = "2.3.0"
+version = "2.3.1"
 dependencies = [
  "alarm",
  "calloop",
@@ -34,7 +34,7 @@ dependencies = [
 
 [[package]]
 name = "aevum-cli"
-version = "2.2.2"
+version = "2.3.1"
 dependencies = [
  "alarm",
  "clap",
@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "alarm"
-version = "2.2.2"
+version = "0.1.0"
 dependencies = [
  "libc",
  "libpulse-binding",
@@ -1585,7 +1585,7 @@ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
 name = "rezz"
-version = "2.2.2"
+version = "2.3.1"
 dependencies = [
  "futures-util",
  "nix",
