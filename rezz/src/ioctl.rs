@@ -1,11 +1,12 @@
 //! RTC system interface.
 
-use std::error::Error;
-
 use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time, UtcOffset};
+
+use crate::Error;
 
 nix::ioctl_write_ptr!(rtc_wkalm_set, 'p', 0x0f, RtcWkalm);
 nix::ioctl_read!(rtc_wkalm_rd, 'p', 0x10, RtcWkalm);
+nix::ioctl_read!(rtc_rd_time, 'p', 0x09, RtcTime);
 
 pub const RESET_ALARM: RtcWkalm = RtcWkalm {
     enabled: false,
@@ -85,16 +86,17 @@ impl From<OffsetDateTime> for RtcTime {
 }
 
 impl TryFrom<RtcTime> for OffsetDateTime {
-    type Error = Box<dyn Error>;
+    type Error = Error;
 
     fn try_from(time: RtcTime) -> Result<Self, Self::Error> {
-        let month = Month::try_from(u8::try_from(time.tm_mon)?)?;
-        let day = u8::try_from(time.tm_mon)?;
+        let year = time.tm_year + 1900;
+        let month = Month::try_from(u8::try_from(time.tm_mon + 1)?)?;
+        let day = u8::try_from(time.tm_mday)?;
         let hour = u8::try_from(time.tm_hour)?;
         let minute = u8::try_from(time.tm_min)?;
         let second = u8::try_from(time.tm_sec)?;
 
-        let date = Date::from_calendar_date(time.tm_year + 1900, month, day)?;
+        let date = Date::from_calendar_date(year, month, day)?;
         let time = Time::from_hms(hour, minute, second)?;
 
         let offset = UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC);

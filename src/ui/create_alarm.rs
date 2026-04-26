@@ -373,7 +373,7 @@ impl CreateAlarm {
 
     // Text label for a quick action interval.
     fn quick_text(&self, minutes: u16) -> String {
-        if minutes % 60 == 0 {
+        if minutes.is_multiple_of(60) {
             format!("+ {} Hours", minutes / 60)
         } else {
             format!("+ {} Minutes", minutes)
